@@ -1,7 +1,7 @@
 using ECommerceApp.Commons;
 using Microsoft.AspNetCore.Mvc;
 using ECommerceApp.DTOs.PaymentDTOs;
-using ECommerceApp.Services.Implements;
+using ECommerceApp.Services.Interfaces;
 
 namespace ECommerceApp.Controllers
 {
@@ -9,9 +9,9 @@ namespace ECommerceApp.Controllers
     [Route("api/[controller]")]
     public class PaymentsController : ControllerBase
     {
-        private readonly PaymentService _paymentService;
+        private readonly IPaymentService _paymentService;
 
-        public PaymentsController(PaymentService paymentService)
+        public PaymentsController(IPaymentService paymentService)
         {
             _paymentService = paymentService;
         }

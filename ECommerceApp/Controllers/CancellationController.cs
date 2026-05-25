@@ -1,7 +1,7 @@
 using ECommerceApp.Commons;
 using Microsoft.AspNetCore.Mvc;
 using ECommerceApp.DTOs.CancellationDTOs;
-using ECommerceApp.Services.Implements;
+using ECommerceApp.Services.Interfaces;
 
 namespace ECommerceApp.Controllers
 {
@@ -9,10 +9,10 @@ namespace ECommerceApp.Controllers
     [Route("api/[controller]")]
     public class CancellationsController : ControllerBase
     {
-        private readonly CancellationService _cancellationService;
+        private readonly ICancellationService _cancellationService;
 
         // Inject the CancellationService via constructor
-        public CancellationsController(CancellationService cancellationService)
+        public CancellationsController(ICancellationService cancellationService)
         {
             _cancellationService = cancellationService;
         }

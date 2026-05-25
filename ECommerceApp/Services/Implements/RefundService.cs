@@ -9,7 +9,7 @@ namespace ECommerceApp.Services.Implements
 {
     public class RefundService(
         IUnitOfWork unitOfWork,
-        EmailService emailService,
+        IEmailService emailService,
         ILogger<RefundService> logger) : IRefundService
     {
         public async Task<ApiResponse<List<PendingRefundResponse>>> GetEligibleRefundsAsync()

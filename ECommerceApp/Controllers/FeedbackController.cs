@@ -1,13 +1,13 @@
 using ECommerceApp.Commons;
 using Microsoft.AspNetCore.Mvc;
 using ECommerceApp.DTOs.FeedbackDTOs;
-using ECommerceApp.Services.Implements;
+using ECommerceApp.Services.Interfaces;
 
 namespace ECommerceApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class FeedbackController(FeedbackService feedbackService) : ControllerBase
+    public class FeedbackController(IFeedbackService feedbackService) : ControllerBase
     {
         // Submits feedback for a product.
         [HttpPost("SubmitFeedback")]

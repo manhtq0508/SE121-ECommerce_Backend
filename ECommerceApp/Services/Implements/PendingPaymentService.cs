@@ -1,5 +1,6 @@
 using ECommerceApp.Data;
 using ECommerceApp.Enums;
+using ECommerceApp.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerceApp.Services.Implements
@@ -62,7 +63,7 @@ namespace ECommerceApp.Services.Implements
                     if (ordersToEmail.Any())
                     {
                         // Retrieve the PaymentService which has our email sending method.
-                        var paymentService = scope.ServiceProvider.GetRequiredService<PaymentService>();
+                        var paymentService = scope.ServiceProvider.GetRequiredService<IPaymentService>();
 
                         foreach (var orderId in ordersToEmail)
                         {

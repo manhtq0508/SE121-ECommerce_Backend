@@ -10,4 +10,5 @@ public interface IPaymentService
     Task<ApiResponse<PaymentResponse>> GetPaymentByOrderIdAsync(int orderId);
     Task<ApiResponse<ConfirmationResponse>> UpdatePaymentStatusAsync(PaymentStatusUpdateRequest statusUpdate);
     Task<ApiResponse<ConfirmationResponse>> CompleteCodPaymentAsync(CODPaymentUpdateRequest codPaymentUpdateDto);
+    Task SendOrderConfirmationEmailAsync(int orderId);
 }

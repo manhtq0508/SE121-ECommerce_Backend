@@ -9,7 +9,7 @@ namespace ECommerceApp.Services.Implements
 {
     public class PaymentService(
         IUnitOfWork unitOfWork,
-        EmailService emailService,
+        IEmailService emailService,
         ILogger<PaymentService> logger) : IPaymentService
     {
         public async Task<ApiResponse<PaymentResponse>> ProcessPaymentAsync(PaymentRequest paymentRequest)
