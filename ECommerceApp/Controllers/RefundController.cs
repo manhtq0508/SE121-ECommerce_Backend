@@ -1,13 +1,13 @@
 using ECommerceApp.Commons;
 using ECommerceApp.DTOs.RefundDTOs;
-using ECommerceApp.Services.Implements;
+using ECommerceApp.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerceApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class RefundsController(RefundService refundService) : ControllerBase
+    public class RefundsController(IRefundService refundService) : ControllerBase
     {
         // GET: api/Refunds/GetEligibleRefunds
         // Returns approved cancellations that have no associated refund entry.

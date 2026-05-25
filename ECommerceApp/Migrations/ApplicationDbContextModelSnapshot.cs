@@ -66,7 +66,7 @@ namespace ECommerceApp.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Addresses", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.Cancellation", b =>
@@ -112,7 +112,7 @@ namespace ECommerceApp.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.ToTable("Cancellations");
+                    b.ToTable("Cancellations", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.Cart", b =>
@@ -139,7 +139,7 @@ namespace ECommerceApp.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Carts");
+                    b.ToTable("Carts", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.CartItem", b =>
@@ -180,7 +180,7 @@ namespace ECommerceApp.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItems", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.Category", b =>
@@ -209,7 +209,7 @@ namespace ECommerceApp.Migrations
                     b.HasIndex(new[] { "Name" }, "IX_Name_Unique")
                         .IsUnique();
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -269,7 +269,7 @@ namespace ECommerceApp.Migrations
                     b.HasIndex(new[] { "Email" }, "IX_Email_Unique")
                         .IsUnique();
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.Feedback", b =>
@@ -305,7 +305,7 @@ namespace ECommerceApp.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("Feedbacks", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.Order", b =>
@@ -356,7 +356,7 @@ namespace ECommerceApp.Migrations
 
                     b.HasIndex("ShippingAddressId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.OrderItem", b =>
@@ -391,7 +391,7 @@ namespace ECommerceApp.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.Payment", b =>
@@ -429,7 +429,7 @@ namespace ECommerceApp.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.Product", b =>
@@ -472,7 +472,7 @@ namespace ECommerceApp.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
 
                     b.HasData(
                         new
@@ -562,7 +562,7 @@ namespace ECommerceApp.Migrations
                     b.HasIndex("PaymentId")
                         .IsUnique();
 
-                    b.ToTable("Refunds");
+                    b.ToTable("Refunds", (string)null);
                 });
 
             modelBuilder.Entity("ECommerceApp.Entities.Status", b =>
@@ -580,7 +580,7 @@ namespace ECommerceApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Statuses");
+                    b.ToTable("Statuses", (string)null);
 
                     b.HasData(
                         new

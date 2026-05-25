@@ -11,7 +11,7 @@ namespace ECommerceApp.Services.Implements
 {
     public class CancellationService(
         IUnitOfWork unitOfWork,
-        EmailService emailService,
+        IEmailService emailService,
         ILogger<CancellationService> logger) : ICancellationService
     {
         // Handles a cancellation request from a customer.

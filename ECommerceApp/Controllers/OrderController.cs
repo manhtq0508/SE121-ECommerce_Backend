@@ -2,14 +2,13 @@ using ECommerceApp.Commons;
 using Microsoft.AspNetCore.Mvc;
 using ECommerceApp.DTOs;
 using ECommerceApp.DTOs.OrderDTOs;
-using ECommerceApp.Services;
-using ECommerceApp.Services.Implements;
+using ECommerceApp.Services.Interfaces;
 
 namespace ECommerceApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OrdersController(OrderService orderService) : ControllerBase
+    public class OrdersController(IOrderService orderService) : ControllerBase
     {
 
         // Creates a new order.

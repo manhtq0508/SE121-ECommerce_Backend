@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ECommerceApp.Data;
 using ECommerceApp.Enums;
+using ECommerceApp.Services.Interfaces;
 
 namespace ECommerceApp.Services.Implements
 {
@@ -37,8 +38,8 @@ namespace ECommerceApp.Services.Implements
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                var emailService = scope.ServiceProvider.GetRequiredService<EmailService>();
-                var refundService = scope.ServiceProvider.GetRequiredService<RefundService>();
+                var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                var refundService = scope.ServiceProvider.GetRequiredService<IRefundService>();
 
                 // Query refunds with status Pending or Failed.
                 var refunds = await context.Refunds
