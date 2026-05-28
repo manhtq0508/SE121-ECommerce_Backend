@@ -33,8 +33,15 @@ namespace ECommerceApp.Services.Implements
                     return new ApiResponse<ProductResponse>(400, "Specified category does not exist.");
                 }
 
+                var normalizedImageReference = NormalizeProductImageReference(productDto.ImageUrl);
+                if (normalizedImageReference == null)
+                {
+                    return new ApiResponse<ProductResponse>(400, "Invalid image reference. Use an absolute URL or a product file key returned by /api/Files/get-upload-url.");
+                }
+
                 var product = mapper.Map(productDto);
                 product.IsAvailable = true;
+                product.ImageUrl = normalizedImageReference;
 
                 
                 unitOfWork.ProductRepository.Add(product);
@@ -110,11 +117,17 @@ namespace ECommerceApp.Services.Implements
                     return new ApiResponse<ConfirmationResponse>(400, "Specified category does not exist.");
                 }
 
+                var normalizedImageReference = NormalizeProductImageReference(productDto.ImageUrl);
+                if (normalizedImageReference == null)
+                {
+                    return new ApiResponse<ConfirmationResponse>(400, "Invalid image reference. Use an absolute URL or a product file key returned by /api/Files/get-upload-url.");
+                }
+
                 product.Name = productDto.Name;
                 product.Description = productDto.Description;
                 product.Price = productDto.Price;
                 product.StockQuantity = productDto.StockQuantity;
-                product.ImageUrl = productDto.ImageUrl;
+                product.ImageUrl = normalizedImageReference;
                 product.DiscountPercentage = productDto.DiscountPercentage;
                 product.CategoryId = productDto.CategoryId;
 
@@ -265,6 +278,29 @@ namespace ECommerceApp.Services.Implements
             return cacheOptions.Value.Enabled
                 ? cache.RefreshVersionAsync(CatalogCacheKeys.ProductVersion, logger)
                 : Task.CompletedTask;
+        }
+
+        private static string? NormalizeProductImageReference(string? imageReference)
+        {
+            if (string.IsNullOrWhiteSpace(imageReference))
+            {
+                return null;
+            }
+
+            var normalized = imageReference.Trim().Replace('\\', '/');
+
+            if (Uri.TryCreate(normalized, UriKind.Absolute, out var uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+            {
+                return normalized;
+            }
+
+            normalized = normalized.TrimStart('/');
+            return normalized.StartsWith("products/", StringComparison.OrdinalIgnoreCase) &&
+                   normalized.Length > "products/".Length &&
+                   !normalized.Contains("..", StringComparison.Ordinal)
+                ? normalized
+                : null;
         }
     }
 }

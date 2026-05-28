@@ -1,4 +1,5 @@
 using System.Text;
+using System.Security.Claims;
 using ECommerceApp.Data;
 using ECommerceApp.Filters;
 using ECommerceApp.Mappings.Addresses;
@@ -138,6 +139,33 @@ public static class ServiceCollectionStartupExtensions
                     ValidAudience = configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT configuration is missing.")))
                 };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var customerIdClaim = context.Principal?.FindFirstValue("customer_id")
+                            ?? context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier)
+                            ?? context.Principal?.FindFirstValue("sub")
+                            ?? context.Principal?.FindFirstValue("userId");
+
+                        if (!int.TryParse(customerIdClaim, out var customerId))
+                        {
+                            context.Fail("Invalid customer token.");
+                            return;
+                        }
+
+                        var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
+                        var isActiveCustomer = await dbContext.Customers
+                            .AsNoTracking()
+                            .AnyAsync(customer => customer.Id == customerId && customer.IsActive);
+
+                        if (!isActiveCustomer)
+                        {
+                            context.Fail("Customer account is inactive.");
+                        }
+                    }
+                };
             });
 
         services.AddAuthorization();
@@ -175,6 +203,7 @@ public static class ServiceCollectionStartupExtensions
         services.AddScoped<ICancellationService, CancellationService>();
         services.AddScoped<IFeedbackService, FeedbackService>();
         services.AddScoped<IRefundService, RefundService>();
+        services.AddScoped<IFileService, FileService>();
 
         services.AddHostedService<PendingPaymentService>();
         services.AddHostedService<RefundProcessingBackgroundService>();

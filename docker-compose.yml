@@ -45,6 +45,8 @@ services:
       EmailSettings__SenderName: ${EMAILSETTINGS__SENDERNAME}
       EmailSettings__FromEmail: ${EMAILSETTINGS__FROMEMAIL}
       EmailSettings__Password: ${EMAILSETTINGS__PASSWORD}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/firebase-auth.json
+      BUCKET_NAME: ${BUCKET_NAME}
       ConnectionStrings__Redis: ${CONNECTIONSTRINGS__REDIS}
       Redis__InstanceName: ${REDIS__INSTANCENAME}
       Cache__Enabled: ${CACHE__ENABLED}
@@ -62,6 +64,8 @@ services:
       SERILOG_ELASTIC_AUTO_REGISTER_TEMPLATE: ${SERILOG_ELASTIC_AUTO_REGISTER_TEMPLATE}
     ports:
       - "${APP_PORT}:8080"
+    volumes:
+      - ./firebase-auth.json:/app/secrets/firebase-auth.json:ro
 
   redis:
     image: redis:7.2-alpine

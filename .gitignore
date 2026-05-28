@@ -61,3 +61,4 @@ nunit-*.xml
 bin/*
 obj/*
 *.user
+firebase-auth.json
