@@ -7,6 +7,6 @@ namespace ECommerceApp.DTOs.FeedbackDTOs
         public int ProductId { get; set; }
         public string ProductName { get; set; }
         public double AverageRating { get; set; }
-        public List<CustomerFeedback> Feedbacks { get; set; }
+        public PagedResult<CustomerFeedback> Feedbacks { get; set; } = new();
     }
 }

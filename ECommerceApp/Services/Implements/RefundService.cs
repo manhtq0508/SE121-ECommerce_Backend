@@ -12,7 +12,7 @@ namespace ECommerceApp.Services.Implements
         IEmailService emailService,
         ILogger<RefundService> logger) : IRefundService
     {
-        public async Task<ApiResponse<List<PendingRefundResponse>>> GetEligibleRefundsAsync()
+        public async Task<ApiResponse<PagedResult<PendingRefundResponse>>> GetEligibleRefundsAsync(PaginationRequest paginationRequest)
         {
             try
             {
@@ -28,12 +28,12 @@ namespace ECommerceApp.Services.Implements
                     CancellationRemarks = c.Remarks
                 }).ToList();
 
-                return new ApiResponse<List<PendingRefundResponse>>(200, pendingRefunds);
+                return new ApiResponse<PagedResult<PendingRefundResponse>>(200, pendingRefunds.ToPagedResult(paginationRequest));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error in RefundService.");
-                return new ApiResponse<List<PendingRefundResponse>>(500, $"An unexpected error occurred while retrieving eligible refunds: {ex.Message}");
+                return new ApiResponse<PagedResult<PendingRefundResponse>>(500, $"An unexpected error occurred while retrieving eligible refunds: {ex.Message}");
             }
         }
         
@@ -184,7 +184,7 @@ namespace ECommerceApp.Services.Implements
             }
         }
         
-        public async Task<ApiResponse<List<RefundResponse>>> GetAllRefundsAsync()
+        public async Task<ApiResponse<PagedResult<RefundResponse>>> GetAllRefundsAsync(PaginationRequest paginationRequest)
         {
             try
             {
@@ -192,12 +192,12 @@ namespace ECommerceApp.Services.Implements
 
                 var refundList = refunds.Select(r => MapRefundToDTO(r)).ToList();
 
-                return new ApiResponse<List<RefundResponse>>(200, refundList);
+                return new ApiResponse<PagedResult<RefundResponse>>(200, refundList.ToPagedResult(paginationRequest));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error in RefundService.");
-                return new ApiResponse<List<RefundResponse>>(500, $"An unexpected error occurred while retrieving all refunds: {ex.Message}");
+                return new ApiResponse<PagedResult<RefundResponse>>(500, $"An unexpected error occurred while retrieving all refunds: {ex.Message}");
             }
         }
 

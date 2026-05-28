@@ -97,6 +97,7 @@ namespace ECommerceApp.Services.Implements
                 {
                     PaymentId = payment.Id,
                     OrderId = payment.OrderId,
+                    CustomerId = order.CustomerId,
                     PaymentMethod = payment.PaymentMethod,
                     TransactionId = payment.TransactionId,
                     Amount = payment.Amount,
@@ -129,6 +130,7 @@ namespace ECommerceApp.Services.Implements
                 {
                     PaymentId = payment.Id,
                     OrderId = payment.OrderId,
+                    CustomerId = payment.Order.CustomerId,
                     PaymentMethod = payment.PaymentMethod,
                     TransactionId = payment.TransactionId,
                     Amount = payment.Amount,
@@ -160,6 +162,7 @@ namespace ECommerceApp.Services.Implements
                 {
                     PaymentId = payment.Id,
                     OrderId = payment.OrderId,
+                    CustomerId = payment.Order.CustomerId,
                     PaymentMethod = payment.PaymentMethod,
                     TransactionId = payment.TransactionId,
                     Amount = payment.Amount,

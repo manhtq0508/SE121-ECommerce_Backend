@@ -1,7 +1,9 @@
 using ECommerceApp.Commons;
 using Microsoft.AspNetCore.Mvc;
 using ECommerceApp.DTOs.CancellationDTOs;
+using ECommerceApp.Security;
 using ECommerceApp.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerceApp.Controllers
 {
@@ -18,9 +20,17 @@ namespace ECommerceApp.Controllers
         }
 
         // Endpoint for customers to request an order cancellation.
+        [Authorize]
         [HttpPost("RequestCancellation")]
         public async Task<ActionResult<ApiResponse<CancellationResponse>>> RequestCancellation([FromBody] CancellationRequest cancellationRequest)
         {
+            var currentCustomerId = User.GetCustomerId();
+
+            if (!User.IsAdmin() && currentCustomerId != cancellationRequest.CustomerId)
+            {
+                return Forbid();
+            }
+
             var response = await _cancellationService.RequestCancellationAsync(cancellationRequest);
             if (response.StatusCode != 200)
             {
@@ -30,10 +40,11 @@ namespace ECommerceApp.Controllers
         }
 
         // Endpoint to retrieve all cancellation requests.
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetAllCancellations")]
-        public async Task<ActionResult<ApiResponse<List<CancellationResponse>>>> GetAllCancellations()
+        public async Task<ActionResult<ApiResponse<PagedResult<CancellationResponse>>>> GetAllCancellations([FromQuery] PaginationRequest paginationRequest)
         {
-            var response = await _cancellationService.GetAllCancellationsAsync();
+            var response = await _cancellationService.GetAllCancellationsAsync(paginationRequest);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -42,6 +53,7 @@ namespace ECommerceApp.Controllers
         }
 
         // Endpoint to retrieve cancellation details by cancellation ID.
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetCancellationById/{id}")]
         public async Task<ActionResult<ApiResponse<CancellationResponse>>> GetCancellationById(int id)
         {
@@ -54,6 +66,7 @@ namespace ECommerceApp.Controllers
         }
 
         // Endpoint for administrators to update the status of a cancellation request.
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateCancellationStatus")]
         public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateCancellationStatus([FromBody] CancellationStatusUpdateRequest statusUpdate)
         {

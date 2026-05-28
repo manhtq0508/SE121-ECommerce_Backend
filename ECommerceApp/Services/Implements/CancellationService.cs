@@ -185,7 +185,7 @@ namespace ECommerceApp.Services.Implements
         }
         
         // Retrieves all cancellation requests used by Admin.
-        public async Task<ApiResponse<List<CancellationResponse>>> GetAllCancellationsAsync()
+        public async Task<ApiResponse<PagedResult<CancellationResponse>>> GetAllCancellationsAsync(PaginationRequest paginationRequest)
         {
             try
             {
@@ -205,12 +205,12 @@ namespace ECommerceApp.Services.Implements
                     Remarks = c.Remarks,
                 }).ToList();
 
-                return new ApiResponse<List<CancellationResponse>>(200, cancellationList);
+                return new ApiResponse<PagedResult<CancellationResponse>>(200, cancellationList.ToPagedResult(paginationRequest));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error in CancellationService.");
-                return new ApiResponse<List<CancellationResponse>>(500, $"An unexpected error occurred while retrieving cancellations: {ex.Message}");
+                return new ApiResponse<PagedResult<CancellationResponse>>(500, $"An unexpected error occurred while retrieving cancellations: {ex.Message}");
             }
         }
 

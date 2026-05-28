@@ -192,7 +192,7 @@ namespace ECommerceApp.Services.Implements
             }
         }
         
-        public async Task<ApiResponse<List<OrderResponse>>> GetAllOrdersAsync()
+        public async Task<ApiResponse<PagedResult<OrderResponse>>> GetAllOrdersAsync(PaginationRequest paginationRequest)
         {
             try
             {
@@ -200,35 +200,35 @@ namespace ECommerceApp.Services.Implements
 
                 var orderList = orders.Select(o => MapOrderToDto(o, o.Customer!, o.BillingAddress!, o.ShippingAddress!)).ToList();
         
-                return new ApiResponse<List<OrderResponse>>(200, orderList);
+                return new ApiResponse<PagedResult<OrderResponse>>(200, orderList.ToPagedResult(paginationRequest));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error in OrderService.");
-                return new ApiResponse<List<OrderResponse>>(500, $"An unexpected error occurred while processing your request: {ex.Message}");
+                return new ApiResponse<PagedResult<OrderResponse>>(500, $"An unexpected error occurred while processing your request: {ex.Message}");
             }
         }
         
-        public async Task<ApiResponse<List<OrderResponse>>> GetOrdersByCustomerAsync(int customerId)
+        public async Task<ApiResponse<PagedResult<OrderResponse>>> GetOrdersByCustomerAsync(int customerId, PaginationRequest paginationRequest)
         {
             try
             {
                 var customerExists = await unitOfWork.CustomerRepository.GetActiveByIdAsync(customerId);
                 if (customerExists == null)
                 {
-                    return new ApiResponse<List<OrderResponse>>(404, "Customer not found.");
+                    return new ApiResponse<PagedResult<OrderResponse>>(404, "Customer not found.");
                 }
 
                 var orders = await unitOfWork.OrderRepository.GetByCustomerIdWithDetailsAsync(customerId);
 
                 var orderList = orders.Select(o => MapOrderToDto(o, o.Customer!, o.BillingAddress!, o.ShippingAddress!)).ToList();
         
-                return new ApiResponse<List<OrderResponse>>(200, orderList);
+                return new ApiResponse<PagedResult<OrderResponse>>(200, orderList.ToPagedResult(paginationRequest));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error in OrderService.");
-                return new ApiResponse<List<OrderResponse>>(500, $"An unexpected error occurred while processing your request: {ex.Message}");
+                return new ApiResponse<PagedResult<OrderResponse>>(500, $"An unexpected error occurred while processing your request: {ex.Message}");
             }
         }
 

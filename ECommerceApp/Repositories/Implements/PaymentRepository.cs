@@ -16,7 +16,9 @@ public class PaymentRepository(ApplicationDbContext context) : IPaymentRepositor
             query = query.AsNoTracking();
         }
 
-        return await query.FirstOrDefaultAsync(p => p.Id == id);
+        return await query
+            .Include(p => p.Order)
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
     
     public async Task<Payment?> GetByOrderIdAsync(int orderId, bool trackChanges = false)
@@ -28,7 +30,9 @@ public class PaymentRepository(ApplicationDbContext context) : IPaymentRepositor
             query = query.AsNoTracking();
         }
 
-        return await query.FirstOrDefaultAsync(p => p.OrderId == orderId);
+        return await query
+            .Include(p => p.Order)
+            .FirstOrDefaultAsync(p => p.OrderId == orderId);
     }
     
     public async Task<Payment?> GetByIdWithOrderAsync(int id, bool trackChanges = false)

@@ -50,7 +50,7 @@ public class CustomerService(
         {
             var customer = await unitOfWork.CustomerRepository.GetByEmailAsync(request.Email);
 
-            if (customer == null)
+            if (customer == null || !customer.IsActive)
             {
                 return new ApiResponse<LoginResponse>(401, "Invalid email or password.");
             }
@@ -109,10 +109,10 @@ public class CustomerService(
     {
         try
         {
-            var customer = await unitOfWork.CustomerRepository.GetByIdAsync(customerDto.CustomerId, trackChanges: true);
+            var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(customerDto.CustomerId, trackChanges: true);
             if (customer == null)
             {
-                return new ApiResponse<ConfirmationResponse>(404, "Customer not found.");
+                return new ApiResponse<ConfirmationResponse>(404, "Customer not found or inactive.");
             }
 
             if (customer.Email != customerDto.Email && await unitOfWork.CustomerRepository.ExistsByEmailAsync(customerDto.Email, excludeCustomerId: customerDto.CustomerId))
@@ -146,11 +146,11 @@ public class CustomerService(
     {
         try
         {
-            var customer = await unitOfWork.CustomerRepository.GetByIdAsync(id, trackChanges: true);
+            var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(id, trackChanges: true);
 
             if (customer == null)
             {
-                return new ApiResponse<ConfirmationResponse>(404, "Customer not found.");
+                return new ApiResponse<ConfirmationResponse>(404, "Customer not found or inactive.");
             }
 
             customer.IsActive = false;

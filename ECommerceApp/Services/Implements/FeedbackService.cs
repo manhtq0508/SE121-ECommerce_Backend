@@ -79,7 +79,7 @@ namespace ECommerceApp.Services.Implements
         }
         
         // Retrieves all feedback for a specific product along with the average rating.
-        public async Task<ApiResponse<ProductFeedbackResponse>> GetFeedbackForProductAsync(int productId)
+        public async Task<ApiResponse<ProductFeedbackResponse>> GetFeedbackForProductAsync(int productId, PaginationRequest paginationRequest)
         {
             try
             {
@@ -115,7 +115,7 @@ namespace ECommerceApp.Services.Implements
                     ProductId = product.Id,
                     ProductName = product.Name,
                     AverageRating = Math.Round(averageRating, 2),
-                    Feedbacks = customerFeedbacks
+                    Feedbacks = customerFeedbacks.ToPagedResult(paginationRequest)
                 };
 
                 return new ApiResponse<ProductFeedbackResponse>(200, productFeedbackResponse);
@@ -128,7 +128,7 @@ namespace ECommerceApp.Services.Implements
         }
 
         // Retrieves all feedback entries in the system.
-        public async Task<ApiResponse<List<FeedbackResponse>>> GetAllFeedbackAsync()
+        public async Task<ApiResponse<PagedResult<FeedbackResponse>>> GetAllFeedbackAsync(PaginationRequest paginationRequest)
         {
             try
             {
@@ -147,12 +147,12 @@ namespace ECommerceApp.Services.Implements
                     UpdatedAt = f.UpdatedAt
                 }).ToList();
 
-                return new ApiResponse<List<FeedbackResponse>>(200, feedbackResponseList);
+                return new ApiResponse<PagedResult<FeedbackResponse>>(200, feedbackResponseList.ToPagedResult(paginationRequest));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error in FeedbackService.");
-                return new ApiResponse<List<FeedbackResponse>>(500, $"An unexpected error occurred while retrieving all feedback: {ex.Message}");
+                return new ApiResponse<PagedResult<FeedbackResponse>>(500, $"An unexpected error occurred while retrieving all feedback: {ex.Message}");
             }
         }
         
@@ -200,7 +200,7 @@ namespace ECommerceApp.Services.Implements
         }
 
         // Deletes a feedback entry.
-        public async Task<ApiResponse<ConfirmationResponse>> DeleteFeedbackAsync(FeedbackDeleteRequest feedbackDeleteRequest)
+        public async Task<ApiResponse<ConfirmationResponse>> DeleteFeedbackAsync(FeedbackDeleteRequest feedbackDeleteRequest, bool isAdmin = false)
         {
             try
             {
@@ -211,7 +211,7 @@ namespace ECommerceApp.Services.Implements
                     return new ApiResponse<ConfirmationResponse>(404, "Feedback not found.");
                 }
 
-                if (feedback.CustomerId != feedbackDeleteRequest.CustomerId)
+                if (!isAdmin && feedback.CustomerId != feedbackDeleteRequest.CustomerId)
                 {
                     return new ApiResponse<ConfirmationResponse>(401, "You are not authorized to delete this feedback.");
                 }

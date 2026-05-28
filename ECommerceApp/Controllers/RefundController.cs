@@ -1,20 +1,22 @@
 using ECommerceApp.Commons;
 using ECommerceApp.DTOs.RefundDTOs;
 using ECommerceApp.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerceApp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     public class RefundsController(IRefundService refundService) : ControllerBase
     {
         // GET: api/Refunds/GetEligibleRefunds
         // Returns approved cancellations that have no associated refund entry.
         [HttpGet("GetEligibleRefunds")]
-        public async Task<ActionResult<ApiResponse<List<PendingRefundResponse>>>> GetEligibleRefunds()
+        public async Task<ActionResult<ApiResponse<PagedResult<PendingRefundResponse>>>> GetEligibleRefunds([FromQuery] PaginationRequest paginationRequest)
         {
-            var response = await refundService.GetEligibleRefundsAsync();
+            var response = await refundService.GetEligibleRefundsAsync(paginationRequest);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -64,9 +66,9 @@ namespace ECommerceApp.Controllers
         // GET: api/Refunds/GetAllRefunds
         // Retrieves all refunds.
         [HttpGet("GetAllRefunds")]
-        public async Task<ActionResult<ApiResponse<List<RefundResponse>>>> GetAllRefunds()
+        public async Task<ActionResult<ApiResponse<PagedResult<RefundResponse>>>> GetAllRefunds([FromQuery] PaginationRequest paginationRequest)
         {
-            var response = await refundService.GetAllRefundsAsync();
+            var response = await refundService.GetAllRefundsAsync(paginationRequest);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
