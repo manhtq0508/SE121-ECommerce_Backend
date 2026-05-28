@@ -3,9 +3,6 @@ namespace ECommerceApp.DTOs.ProductDTOs
 {
     public class ProductUpdateRequest
     {
-        [Required(ErrorMessage = "Product Id is required.")]
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Product Name is required.")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "Product Name must be between 3 and 100 characters.")]
         public string Name { get; set; }

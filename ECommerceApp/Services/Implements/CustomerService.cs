@@ -105,17 +105,17 @@ public class CustomerService(
         }
     }
 
-    public async Task<ApiResponse<ConfirmationResponse>> UpdateCustomerAsync(CustomerUpdateRequest customerDto)
+    public async Task<ApiResponse<ConfirmationResponse>> UpdateCustomerAsync(int customerId, CustomerUpdateRequest customerDto)
     {
         try
         {
-            var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(customerDto.CustomerId, trackChanges: true);
+            var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(customerId, trackChanges: true);
             if (customer == null)
             {
                 return new ApiResponse<ConfirmationResponse>(404, "Customer not found or inactive.");
             }
 
-            if (customer.Email != customerDto.Email && await unitOfWork.CustomerRepository.ExistsByEmailAsync(customerDto.Email, excludeCustomerId: customerDto.CustomerId))
+            if (customer.Email != customerDto.Email && await unitOfWork.CustomerRepository.ExistsByEmailAsync(customerDto.Email, excludeCustomerId: customerId))
             {
                 return new ApiResponse<ConfirmationResponse>(400, "Email is already in use.");
             }
@@ -130,7 +130,7 @@ public class CustomerService(
 
             var confirmationMessage = new ConfirmationResponse
             {
-                Message = $"Customer with Id {customerDto.CustomerId} updated successfully."
+                Message = $"Customer with Id {customerId} updated successfully."
             };
 
             return new ApiResponse<ConfirmationResponse>(200, confirmationMessage);
@@ -170,11 +170,11 @@ public class CustomerService(
         }
     }
 
-    public async Task<ApiResponse<ConfirmationResponse>> ChangePasswordAsync(ChangePasswordRequest request)
+    public async Task<ApiResponse<ConfirmationResponse>> ChangePasswordAsync(int customerId, ChangePasswordRequest request)
     {
         try
         {
-            var customer = await unitOfWork.CustomerRepository.GetByIdAsync(request.CustomerId, trackChanges: true);
+            var customer = await unitOfWork.CustomerRepository.GetByIdAsync(customerId, trackChanges: true);
             
             if (customer == null || !customer.IsActive)
             {

@@ -37,12 +37,12 @@ namespace ECommerceApp.Services.Implements
             }
         }
         
-        public async Task<ApiResponse<RefundResponse>> ProcessRefundAsync(RefundRequest refundRequest)
+        public async Task<ApiResponse<RefundResponse>> ProcessRefundAsync(int cancellationId, int processedBy, RefundRequest refundRequest)
         {
             try
             {
                 var cancellation = await unitOfWork.CancellationRepository.GetByIdWithFullDetailsAsync(
-                    refundRequest.CancellationId, 
+                    cancellationId, 
                     trackChanges: true);
 
                 if (cancellation == null)
@@ -52,7 +52,7 @@ namespace ECommerceApp.Services.Implements
                     return new ApiResponse<RefundResponse>(400, "Only approved cancellations are eligible for refunds.");
 
                 var existingRefund = await unitOfWork.RefundRepository.GetByCancellationIdAsync(
-                    refundRequest.CancellationId, 
+                    cancellationId, 
                     trackChanges: false);
 
                 if (existingRefund != null)
@@ -68,14 +68,14 @@ namespace ECommerceApp.Services.Implements
 
                 var refund = new Refund
                 {
-                    CancellationId = refundRequest.CancellationId,
+                    CancellationId = cancellationId,
                     PaymentId = payment.Id,
                     Amount = computedRefundAmount,
                     RefundMethod = refundRequest.RefundMethod.ToString(),
                     RefundReason = refundRequest.RefundReason,
                     Status = RefundStatus.Pending,
                     InitiatedAt = DateTime.UtcNow,
-                    ProcessedBy = refundRequest.ProcessedBy
+                    ProcessedBy = processedBy
                 };
 
                 unitOfWork.RefundRepository.Add(refund);
@@ -117,11 +117,11 @@ namespace ECommerceApp.Services.Implements
             }
         }
         
-        public async Task<ApiResponse<ConfirmationResponse>> UpdateRefundStatusAsync(RefundStatusUpdateRequest statusUpdate)
+        public async Task<ApiResponse<ConfirmationResponse>> UpdateRefundStatusAsync(int refundId, int processedBy, RefundStatusUpdateRequest statusUpdate)
         {
             try
             {
-                var refund = await unitOfWork.RefundRepository.GetByIdWithFullDetailsAsync(statusUpdate.RefundId, trackChanges: true);
+                var refund = await unitOfWork.RefundRepository.GetByIdWithFullDetailsAsync(refundId, trackChanges: true);
 
                 if (refund == null)
                     return new ApiResponse<ConfirmationResponse>(404, "Refund not found.");
@@ -133,7 +133,7 @@ namespace ECommerceApp.Services.Implements
                 refund.Status = RefundStatus.Completed;
                 refund.TransactionId = statusUpdate.TransactionId;
                 refund.CompletedAt = DateTime.UtcNow;
-                refund.ProcessedBy = statusUpdate.ProcessedBy;
+                refund.ProcessedBy = processedBy;
                 refund.RefundReason = statusUpdate.RefundReason;
 
                 if (refund.Payment != null)

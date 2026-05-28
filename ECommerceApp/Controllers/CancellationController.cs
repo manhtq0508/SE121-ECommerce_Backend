@@ -21,17 +21,16 @@ namespace ECommerceApp.Controllers
 
         // Endpoint for customers to request an order cancellation.
         [Authorize]
-        [HttpPost("RequestCancellation")]
-        public async Task<ActionResult<ApiResponse<CancellationResponse>>> RequestCancellation([FromBody] CancellationRequest cancellationRequest)
+        [HttpPost("RequestCancellation/{orderId:int}")]
+        public async Task<ActionResult<ApiResponse<CancellationResponse>>> RequestCancellation(int orderId, [FromBody] CancellationRequest cancellationRequest)
         {
             var currentCustomerId = User.GetCustomerId();
-
-            if (!User.IsAdmin() && currentCustomerId != cancellationRequest.CustomerId)
+            if (currentCustomerId == null)
             {
                 return Forbid();
             }
 
-            var response = await _cancellationService.RequestCancellationAsync(cancellationRequest);
+            var response = await _cancellationService.RequestCancellationAsync(orderId, currentCustomerId.Value, User.IsAdmin(), cancellationRequest);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -67,10 +66,16 @@ namespace ECommerceApp.Controllers
 
         // Endpoint for administrators to update the status of a cancellation request.
         [Authorize(Roles = "Admin")]
-        [HttpPut("UpdateCancellationStatus")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateCancellationStatus([FromBody] CancellationStatusUpdateRequest statusUpdate)
+        [HttpPut("UpdateCancellationStatus/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateCancellationStatus(int id, [FromBody] CancellationStatusUpdateRequest statusUpdate)
         {
-            var response = await _cancellationService.UpdateCancellationStatusAsync(statusUpdate);
+            var currentCustomerId = User.GetCustomerId();
+            if (currentCustomerId == null)
+            {
+                return Forbid();
+            }
+
+            var response = await _cancellationService.UpdateCancellationStatusAsync(id, currentCustomerId.Value, statusUpdate);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);

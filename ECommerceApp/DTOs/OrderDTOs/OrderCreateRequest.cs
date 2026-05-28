@@ -5,9 +5,6 @@ namespace ECommerceApp.DTOs.OrderDTOs
     // DTO for creating a new order
     public class OrderCreateRequest
     {
-        [Required(ErrorMessage = "Customer ID is required.")]
-        public int CustomerId { get; set; }
-
         [Required(ErrorMessage = "Billing Address ID is required.")]
         public int BillingAddressId { get; set; }
 

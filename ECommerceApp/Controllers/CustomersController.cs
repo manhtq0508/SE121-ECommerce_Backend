@@ -62,17 +62,17 @@ namespace ECommerceApp.Controllers
         }
 
         [Authorize]
-        [HttpPut("UpdateCustomer")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateCustomer([FromBody] CustomerUpdateRequest request)
+        [HttpPut("UpdateCustomer/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateCustomer(int id, [FromBody] CustomerUpdateRequest request)
         {
             var currentCustomerId = User.GetCustomerId();
 
-            if (!User.IsAdmin() && currentCustomerId != request.CustomerId)
+            if (!User.IsAdmin() && currentCustomerId != id)
             {
                 return Forbid();
             }
 
-            var response = await _customerService.UpdateCustomerAsync(request);
+            var response = await _customerService.UpdateCustomerAsync(id, request);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);
@@ -104,13 +104,12 @@ namespace ECommerceApp.Controllers
         public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> ChangePassword([FromBody] ChangePasswordRequest request)
         {
             var currentCustomerId = User.GetCustomerId();
-
-            if (!User.IsAdmin() && currentCustomerId != request.CustomerId)
+            if (currentCustomerId == null)
             {
                 return Forbid();
             }
 
-            var response = await _customerService.ChangePasswordAsync(request);
+            var response = await _customerService.ChangePasswordAsync(currentCustomerId.Value, request);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);

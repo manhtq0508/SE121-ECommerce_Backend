@@ -4,9 +4,6 @@ namespace ECommerceApp.DTOs.ShoppingCartDTOs
 {
     public class AddToCartRequest
     {
-        [Required(ErrorMessage = "CustomerId is required.")]
-        public int CustomerId { get; set; }
-
         [Required(ErrorMessage = "ProductId is required.")]
         public int ProductId { get; set; }
 

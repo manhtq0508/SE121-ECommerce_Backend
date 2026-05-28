@@ -8,25 +8,25 @@ namespace ECommerceApp.Services.Implements
 {
     public class FeedbackService(IUnitOfWork unitOfWork, ILogger<FeedbackService> logger) : IFeedbackService
     {
-        public async Task<ApiResponse<FeedbackResponse>> SubmitFeedbackAsync(FeedbackCreateRequest feedbackCreateRequest)
+        public async Task<ApiResponse<FeedbackResponse>> SubmitFeedbackAsync(int customerId, int productId, FeedbackCreateRequest feedbackCreateRequest)
         {
             try
             {
-                var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(feedbackCreateRequest.CustomerId, trackChanges: false);
+                var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(customerId, trackChanges: false);
                 if (customer == null)
                 {
                     return new ApiResponse<FeedbackResponse>(404, "Customer not found.");
                 }
 
-                var product = await unitOfWork.ProductRepository.GetByIdAsync(feedbackCreateRequest.ProductId, trackChanges: false);
+                var product = await unitOfWork.ProductRepository.GetByIdAsync(productId, trackChanges: false);
                 if (product == null)
                 {
                     return new ApiResponse<FeedbackResponse>(404, "Product not found.");
                 }
 
                 bool hasPurchased = await unitOfWork.OrderRepository.HasCustomerPurchasedAndReceivedProductAsync(
-                    feedbackCreateRequest.CustomerId, 
-                    feedbackCreateRequest.ProductId);
+                    customerId, 
+                    productId);
 
                 if (!hasPurchased)
                 {
@@ -34,8 +34,8 @@ namespace ECommerceApp.Services.Implements
                 }
 
                 bool feedbackExists = await unitOfWork.FeedbackRepository.ExistsByCustomerAndProductAsync(
-                    feedbackCreateRequest.CustomerId, 
-                    feedbackCreateRequest.ProductId);
+                    customerId, 
+                    productId);
 
                 if (feedbackExists)
                 {
@@ -44,8 +44,8 @@ namespace ECommerceApp.Services.Implements
 
                 var feedback = new Feedback
                 {
-                    CustomerId = feedbackCreateRequest.CustomerId,
-                    ProductId = feedbackCreateRequest.ProductId,
+                    CustomerId = customerId,
+                    ProductId = productId,
                     Rating = feedbackCreateRequest.Rating,
                     Comment = feedbackCreateRequest.Comment,
                     CreatedAt = DateTime.UtcNow,
@@ -157,14 +157,16 @@ namespace ECommerceApp.Services.Implements
         }
         
         // Updates an existing feedback entry.
-        public async Task<ApiResponse<FeedbackResponse>> UpdateFeedbackAsync(FeedbackUpdateRequest feedbackUpdateRequest)
+        public async Task<ApiResponse<FeedbackResponse>> UpdateFeedbackAsync(int feedbackId, int currentCustomerId, bool isAdmin, FeedbackUpdateRequest feedbackUpdateRequest)
         {
             try
             {
-                var feedback = await unitOfWork.FeedbackRepository.GetByIdAndCustomerIdWithDetailsAsync(
-                    feedbackUpdateRequest.FeedbackId,
-                    feedbackUpdateRequest.CustomerId,
-                    trackChanges: true);
+                var feedback = isAdmin
+                    ? await unitOfWork.FeedbackRepository.GetByIdWithDetailsAsync(feedbackId, trackChanges: true)
+                    : await unitOfWork.FeedbackRepository.GetByIdAndCustomerIdWithDetailsAsync(
+                        feedbackId,
+                        currentCustomerId,
+                        trackChanges: true);
 
                 if (feedback == null)
                 {
@@ -200,18 +202,18 @@ namespace ECommerceApp.Services.Implements
         }
 
         // Deletes a feedback entry.
-        public async Task<ApiResponse<ConfirmationResponse>> DeleteFeedbackAsync(FeedbackDeleteRequest feedbackDeleteRequest, bool isAdmin = false)
+        public async Task<ApiResponse<ConfirmationResponse>> DeleteFeedbackAsync(int feedbackId, int currentCustomerId, bool isAdmin = false)
         {
             try
             {
-                var feedback = await unitOfWork.FeedbackRepository.GetByIdAsync(feedbackDeleteRequest.FeedbackId, trackChanges: true);
+                var feedback = await unitOfWork.FeedbackRepository.GetByIdAsync(feedbackId, trackChanges: true);
 
                 if (feedback == null)
                 {
                     return new ApiResponse<ConfirmationResponse>(404, "Feedback not found.");
                 }
 
-                if (!isAdmin && feedback.CustomerId != feedbackDeleteRequest.CustomerId)
+                if (!isAdmin && feedback.CustomerId != currentCustomerId)
                 {
                     return new ApiResponse<ConfirmationResponse>(401, "You are not authorized to delete this feedback.");
                 }
@@ -221,7 +223,7 @@ namespace ECommerceApp.Services.Implements
 
                 var confirmation = new ConfirmationResponse
                 {
-                    Message = $"Feedback with Id {feedbackDeleteRequest.FeedbackId} was deleted successfully."
+                    Message = $"Feedback with Id {feedbackId} was deleted successfully."
                 };
 
                 return new ApiResponse<ConfirmationResponse>(200, confirmation);

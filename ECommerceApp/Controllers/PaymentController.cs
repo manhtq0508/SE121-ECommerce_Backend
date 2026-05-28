@@ -20,17 +20,16 @@ namespace ECommerceApp.Controllers
 
         // Processes a payment for an order.
         [Authorize]
-        [HttpPost("ProcessPayment")]
-        public async Task<ActionResult<ApiResponse<PaymentResponse>>> ProcessPayment([FromBody] PaymentRequest paymentRequest)
+        [HttpPost("ProcessPayment/{orderId:int}")]
+        public async Task<ActionResult<ApiResponse<PaymentResponse>>> ProcessPayment(int orderId, [FromBody] PaymentRequest paymentRequest)
         {
             var currentCustomerId = User.GetCustomerId();
-
-            if (!User.IsAdmin() && currentCustomerId != paymentRequest.CustomerId)
+            if (currentCustomerId == null)
             {
                 return Forbid();
             }
 
-            var response = await _paymentService.ProcessPaymentAsync(paymentRequest);
+            var response = await _paymentService.ProcessPaymentAsync(orderId, currentCustomerId.Value, User.IsAdmin(), paymentRequest);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -78,10 +77,10 @@ namespace ECommerceApp.Controllers
 
         // Updates the status of an existing payment.
         [Authorize(Roles = "Admin")]
-        [HttpPut("UpdatePaymentStatus")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdatePaymentStatus([FromBody] PaymentStatusUpdateRequest statusUpdate)
+        [HttpPut("UpdatePaymentStatus/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdatePaymentStatus(int id, [FromBody] PaymentStatusUpdateRequest statusUpdate)
         {
-            var response = await _paymentService.UpdatePaymentStatusAsync(statusUpdate);
+            var response = await _paymentService.UpdatePaymentStatusAsync(id, statusUpdate);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -91,10 +90,10 @@ namespace ECommerceApp.Controllers
 
         // Completes a Cash on Delivery (COD) payment.
         [Authorize(Roles = "Admin")]
-        [HttpPost("CompleteCODPayment")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> CompleteCODPayment([FromBody] CODPaymentUpdateRequest codPaymentUpdateDTO)
+        [HttpPost("CompleteCODPayment/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> CompleteCODPayment(int id)
         {
-            var response = await _paymentService.CompleteCodPaymentAsync(codPaymentUpdateDTO);
+            var response = await _paymentService.CompleteCodPaymentAsync(id);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);

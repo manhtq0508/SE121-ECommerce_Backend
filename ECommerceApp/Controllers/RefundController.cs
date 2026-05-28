@@ -1,5 +1,6 @@
 using ECommerceApp.Commons;
 using ECommerceApp.DTOs.RefundDTOs;
+using ECommerceApp.Security;
 using ECommerceApp.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,10 +27,16 @@ namespace ECommerceApp.Controllers
 
         // POST: api/Refunds/ProcessRefund
         // Initiates a refund for approved cancellations without an existing refund record.
-        [HttpPost("ProcessRefund")]
-        public async Task<ActionResult<ApiResponse<RefundResponse>>> ProcessRefund([FromBody] RefundRequest refundRequest)
+        [HttpPost("ProcessRefund/{cancellationId:int}")]
+        public async Task<ActionResult<ApiResponse<RefundResponse>>> ProcessRefund(int cancellationId, [FromBody] RefundRequest refundRequest)
         {
-            var response = await refundService.ProcessRefundAsync(refundRequest);
+            var currentCustomerId = User.GetCustomerId();
+            if (currentCustomerId == null)
+            {
+                return Forbid();
+            }
+
+            var response = await refundService.ProcessRefundAsync(cancellationId, currentCustomerId.Value, refundRequest);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -39,10 +46,16 @@ namespace ECommerceApp.Controllers
 
         // PUT: api/Refunds/UpdateRefundStatus
         // Manually reprocesses a refund (only applicable if the refund is pending or failed).
-        [HttpPut("UpdateRefundStatus")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateRefundStatus([FromBody] RefundStatusUpdateRequest statusUpdate)
+        [HttpPut("UpdateRefundStatus/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateRefundStatus(int id, [FromBody] RefundStatusUpdateRequest statusUpdate)
         {
-            var response = await refundService.UpdateRefundStatusAsync(statusUpdate);
+            var currentCustomerId = User.GetCustomerId();
+            if (currentCustomerId == null)
+            {
+                return Forbid();
+            }
+
+            var response = await refundService.UpdateRefundStatusAsync(id, currentCustomerId.Value, statusUpdate);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);

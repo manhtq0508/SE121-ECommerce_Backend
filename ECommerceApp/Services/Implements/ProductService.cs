@@ -97,17 +97,17 @@ namespace ECommerceApp.Services.Implements
             }
         }
 
-        public async Task<ApiResponse<ConfirmationResponse>> UpdateProductAsync(ProductUpdateRequest productDto)
+        public async Task<ApiResponse<ConfirmationResponse>> UpdateProductAsync(int productId, ProductUpdateRequest productDto)
         {
             try
             {
-                var product = await unitOfWork.ProductRepository.GetByIdAsync(productDto.Id, true);
+                var product = await unitOfWork.ProductRepository.GetByIdAsync(productId, true);
                 if (product == null)
                 {
                     return new ApiResponse<ConfirmationResponse>(404, "Product not found.");
                 }
 
-                if (await unitOfWork.ProductRepository.ExistsByNameAsync(productDto.Name, productDto.Id))
+                if (await unitOfWork.ProductRepository.ExistsByNameAsync(productDto.Name, productId))
                 {
                     return new ApiResponse<ConfirmationResponse>(400, "Another product with the same name already exists.");
                 }
@@ -136,7 +136,7 @@ namespace ECommerceApp.Services.Implements
                 
                 return new ApiResponse<ConfirmationResponse>(200, new ConfirmationResponse
                 {
-                    Message = $"Product with Id {productDto.Id} updated successfully."
+                    Message = $"Product with Id {productId} updated successfully."
                 });
             }
             catch (Exception ex)
@@ -236,11 +236,11 @@ namespace ECommerceApp.Services.Implements
             }
         }
 
-        public async Task<ApiResponse<ConfirmationResponse>> UpdateProductStatusAsync(ProductStatusUpdateRequest productStatusUpdateDto)
+        public async Task<ApiResponse<ConfirmationResponse>> UpdateProductStatusAsync(int productId, ProductStatusUpdateRequest productStatusUpdateDto)
         {
             try
             {
-                var product = await unitOfWork.ProductRepository.GetByIdAsync(productStatusUpdateDto.ProductId, true);
+                var product = await unitOfWork.ProductRepository.GetByIdAsync(productId, true);
 
                 if (product == null)
                 {
@@ -254,7 +254,7 @@ namespace ECommerceApp.Services.Implements
                 
                 return new ApiResponse<ConfirmationResponse>(200, new ConfirmationResponse
                 {
-                    Message = $"Product with Id {productStatusUpdateDto.ProductId} Status Updated successfully."
+                    Message = $"Product with Id {productId} Status Updated successfully."
                 });
             }
             catch (Exception ex)

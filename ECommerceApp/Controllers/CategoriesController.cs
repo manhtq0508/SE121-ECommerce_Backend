@@ -43,10 +43,10 @@ namespace ECommerceApp.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut("UpdateCategory")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateCategory([FromBody] CategoryUpdateRequest categoryDto)
+        [HttpPut("UpdateCategory/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateCategory(int id, [FromBody] CategoryUpdateRequest categoryDto)
         {
-            var response = await _categoryService.UpdateCategoryAsync(categoryDto);
+            var response = await _categoryService.UpdateCategoryAsync(id, categoryDto);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);

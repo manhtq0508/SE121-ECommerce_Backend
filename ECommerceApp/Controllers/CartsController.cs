@@ -40,17 +40,17 @@ namespace ECommerceApp.Controllers
 
         // Adds an item to the customer's cart.
         [Authorize]
-        [HttpPost("AddToCart")]
-        public async Task<ActionResult<ApiResponse<CartResponse>>> AddToCart([FromBody] AddToCartRequest addToCartDTO)
+        [HttpPost("AddToCart/{customerId:int}")]
+        public async Task<ActionResult<ApiResponse<CartResponse>>> AddToCart(int customerId, [FromBody] AddToCartRequest addToCartDTO)
         {
             var currentCustomerId = User.GetCustomerId();
 
-            if (!User.IsAdmin() && currentCustomerId != addToCartDTO.CustomerId)
+            if (!User.IsAdmin() && currentCustomerId != customerId)
             {
                 return Forbid();
             }
 
-            var response = await _shoppingCartService.AddToCartAsync(addToCartDTO);
+            var response = await _shoppingCartService.AddToCartAsync(customerId, addToCartDTO);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -60,17 +60,17 @@ namespace ECommerceApp.Controllers
 
         // Updates the quantity of an existing cart item.
         [Authorize]
-        [HttpPut("UpdateCartItem")]
-        public async Task<ActionResult<ApiResponse<CartResponse>>> UpdateCartItem([FromBody] UpdateCartItemRequest updateCartItemDTO)
+        [HttpPut("UpdateCartItem/{customerId:int}/items/{cartItemId:int}")]
+        public async Task<ActionResult<ApiResponse<CartResponse>>> UpdateCartItem(int customerId, int cartItemId, [FromBody] UpdateCartItemRequest updateCartItemDTO)
         {
             var currentCustomerId = User.GetCustomerId();
 
-            if (!User.IsAdmin() && currentCustomerId != updateCartItemDTO.CustomerId)
+            if (!User.IsAdmin() && currentCustomerId != customerId)
             {
                 return Forbid();
             }
 
-            var response = await _shoppingCartService.UpdateCartItemAsync(updateCartItemDTO);
+            var response = await _shoppingCartService.UpdateCartItemAsync(customerId, cartItemId, updateCartItemDTO);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -80,17 +80,17 @@ namespace ECommerceApp.Controllers
 
         // Removes a specific item from the cart.
         [Authorize]
-        [HttpDelete("RemoveCartItem")]
-        public async Task<ActionResult<ApiResponse<CartResponse>>> RemoveCartItem([FromBody] RemoveCartItemDTO removeCartItemDTO)
+        [HttpDelete("RemoveCartItem/{customerId:int}/items/{cartItemId:int}")]
+        public async Task<ActionResult<ApiResponse<CartResponse>>> RemoveCartItem(int customerId, int cartItemId)
         {
             var currentCustomerId = User.GetCustomerId();
 
-            if (!User.IsAdmin() && currentCustomerId != removeCartItemDTO.CustomerId)
+            if (!User.IsAdmin() && currentCustomerId != customerId)
             {
                 return Forbid();
             }
 
-            var response = await _shoppingCartService.RemoveCartItemAsync(removeCartItemDTO);
+            var response = await _shoppingCartService.RemoveCartItemAsync(customerId, cartItemId);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -100,8 +100,8 @@ namespace ECommerceApp.Controllers
 
         // Clears all items from the customer's active cart.
         [Authorize]
-        [HttpDelete("ClearCart")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> ClearCart([FromQuery] int customerId)
+        [HttpDelete("ClearCart/{customerId:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> ClearCart(int customerId)
         {
             var currentCustomerId = User.GetCustomerId();
 

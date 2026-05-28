@@ -15,15 +15,14 @@ namespace ECommerceApp.Services.Implements
         ILogger<CancellationService> logger) : ICancellationService
     {
         // Handles a cancellation request from a customer.
-        public async Task<ApiResponse<CancellationResponse>> RequestCancellationAsync(CancellationRequest cancellationRequest)
+        public async Task<ApiResponse<CancellationResponse>> RequestCancellationAsync(int orderId, int currentCustomerId, bool isAdmin, CancellationRequest cancellationRequest)
         {
             try
             {
                 // 1. Validate order existence with customer verification (read-only)
-                var order = await unitOfWork.OrderRepository.GetByIdAndCustomerIdAsync(
-                    cancellationRequest.OrderId, 
-                    cancellationRequest.CustomerId, 
-                    trackChanges: false);
+                var order = isAdmin
+                    ? await unitOfWork.OrderRepository.GetByIdAsync(orderId, trackChanges: false)
+                    : await unitOfWork.OrderRepository.GetByIdAndCustomerIdAsync(orderId, currentCustomerId, trackChanges: false);
 
                 if (order == null)
                 {
@@ -38,7 +37,7 @@ namespace ECommerceApp.Services.Implements
 
                 // 3. Check if a cancellation request for the order already exists (read-only)
                 var existingCancellation = await unitOfWork.CancellationRepository.GetByOrderIdAsync(
-                    cancellationRequest.OrderId, 
+                    orderId, 
                     trackChanges: false);
 
                 if (existingCancellation != null)
@@ -49,7 +48,7 @@ namespace ECommerceApp.Services.Implements
                 // 4. Create the new cancellation record
                 var cancellation = new Cancellation
                 {
-                    OrderId = cancellationRequest.OrderId,
+                    OrderId = orderId,
                     Reason = cancellationRequest.Reason,
                     Status = CancellationStatus.Pending,
                     RequestedAt = DateTime.UtcNow,
@@ -122,13 +121,13 @@ namespace ECommerceApp.Services.Implements
 
         // Updates the status of a cancellation request (approval/rejection) by an administrator.
         // Also handles order status update and stock restoration if approved.
-        public async Task<ApiResponse<ConfirmationResponse>> UpdateCancellationStatusAsync(CancellationStatusUpdateRequest statusUpdate)
+        public async Task<ApiResponse<ConfirmationResponse>> UpdateCancellationStatusAsync(int cancellationId, int processedBy, CancellationStatusUpdateRequest statusUpdate)
         {
             await using var transaction = await unitOfWork.BeginTransactionAsync();
             try
             {
                 var cancellation = await unitOfWork.CancellationRepository.GetByIdWithFullOrderDetailsAsync(
-                    statusUpdate.CancellationId, 
+                    cancellationId, 
                     trackChanges: true);
 
                 if (cancellation == null)
@@ -143,7 +142,7 @@ namespace ECommerceApp.Services.Implements
 
                 cancellation.Status = statusUpdate.Status;
                 cancellation.ProcessedAt = DateTime.UtcNow;
-                cancellation.ProcessedBy = statusUpdate.ProcessedBy;
+                cancellation.ProcessedBy = processedBy;
                 cancellation.Remarks = statusUpdate.Remarks;
 
                 if (statusUpdate.Status == CancellationStatus.Approved)

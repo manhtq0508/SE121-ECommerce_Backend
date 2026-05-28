@@ -4,9 +4,6 @@ namespace ECommerceApp.DTOs.CustomerDTOs
 {
     public class ChangePasswordRequest
     {
-        [Required(ErrorMessage = "CustomerId is required.")]
-        public int CustomerId { get; set; }
-
         [Required(ErrorMessage = "Current Password is required.")]
         public string CurrentPassword { get; set; } = null!;
 

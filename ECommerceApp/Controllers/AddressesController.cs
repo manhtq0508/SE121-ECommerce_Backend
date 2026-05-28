@@ -21,17 +21,17 @@ namespace ECommerceApp.Controllers
 
         // Creates a new address for a customer.
         [Authorize]
-        [HttpPost("CreateAddress")]
-        public async Task<ActionResult<ApiResponse<AddressResponse>>> CreateAddress([FromBody] AddressCreateRequest addressDto)
+        [HttpPost("CreateAddress/{customerId:int}")]
+        public async Task<ActionResult<ApiResponse<AddressResponse>>> CreateAddress(int customerId, [FromBody] AddressCreateRequest addressDto)
         {
             var currentCustomerId = User.GetCustomerId();
 
-            if (!User.IsAdmin() && currentCustomerId != addressDto.CustomerId)
+            if (!User.IsAdmin() && currentCustomerId != customerId)
             {
                 return Forbid();
             }
 
-            var response = await _addressService.CreateAddressAsync(addressDto);
+            var response = await _addressService.CreateAddressAsync(customerId, addressDto);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -60,17 +60,16 @@ namespace ECommerceApp.Controllers
 
         // Updates an existing address.
         [Authorize]
-        [HttpPut("UpdateAddress")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateAddress([FromBody] AddressUpdateRequest addressDto)
+        [HttpPut("UpdateAddress/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateAddress(int id, [FromBody] AddressUpdateRequest addressDto)
         {
             var currentCustomerId = User.GetCustomerId();
-
-            if (!User.IsAdmin() && currentCustomerId != addressDto.CustomerId)
+            if (currentCustomerId == null)
             {
                 return Forbid();
             }
 
-            var response = await _addressService.UpdateAddressAsync(addressDto);
+            var response = await _addressService.UpdateAddressAsync(id, currentCustomerId.Value, User.IsAdmin(), addressDto);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -80,17 +79,16 @@ namespace ECommerceApp.Controllers
 
         // Deletes an address by ID.
         [Authorize]
-        [HttpDelete("DeleteAddress")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> DeleteAddress([FromBody] AddressDeleteRequest addressDeleteDTO)
+        [HttpDelete("DeleteAddress/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> DeleteAddress(int id)
         {
             var currentCustomerId = User.GetCustomerId();
-
-            if (!User.IsAdmin() && currentCustomerId != addressDeleteDTO.CustomerId)
+            if (currentCustomerId == null)
             {
                 return Forbid();
             }
 
-            var response = await _addressService.DeleteAddressAsync(addressDeleteDTO);
+            var response = await _addressService.DeleteAddressAsync(id, currentCustomerId.Value, User.IsAdmin());
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);

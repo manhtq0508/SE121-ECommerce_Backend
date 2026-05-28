@@ -43,10 +43,10 @@ namespace ECommerceApp.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut("UpdateProduct")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateProduct([FromBody] ProductUpdateRequest productDto)
+        [HttpPut("UpdateProduct/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateProduct(int id, [FromBody] ProductUpdateRequest productDto)
         {
-            var response = await _productService.UpdateProductAsync(productDto);
+            var response = await _productService.UpdateProductAsync(id, productDto);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -89,10 +89,10 @@ namespace ECommerceApp.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut("UpdateProductStatus")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateProductStatus([FromBody] ProductStatusUpdateRequest productStatusUpdateDTO)
+        [HttpPut("UpdateProductStatus/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateProductStatus(int id, [FromBody] ProductStatusUpdateRequest productStatusUpdateDTO)
         {
-            var response = await _productService.UpdateProductStatusAsync(productStatusUpdateDTO);
+            var response = await _productService.UpdateProductStatusAsync(id, productStatusUpdateDTO);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);

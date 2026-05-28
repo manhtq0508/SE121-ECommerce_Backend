@@ -6,10 +6,10 @@ namespace ECommerceApp.Services.Interfaces
 {
     public interface IAddressService
     {
-        Task<ApiResponse<AddressResponse>> CreateAddressAsync(AddressCreateRequest addressDto);
+        Task<ApiResponse<AddressResponse>> CreateAddressAsync(int customerId, AddressCreateRequest addressDto);
         Task<ApiResponse<AddressResponse>> GetAddressByIdAsync(int id, int currentCustomerId, bool isAdmin);
-        Task<ApiResponse<ConfirmationResponse>> UpdateAddressAsync(AddressUpdateRequest addressDto);
-        Task<ApiResponse<ConfirmationResponse>> DeleteAddressAsync(AddressDeleteRequest addressDeleteDTO);
+        Task<ApiResponse<ConfirmationResponse>> UpdateAddressAsync(int addressId, int currentCustomerId, bool isAdmin, AddressUpdateRequest addressDto);
+        Task<ApiResponse<ConfirmationResponse>> DeleteAddressAsync(int addressId, int currentCustomerId, bool isAdmin);
         Task<ApiResponse<PagedResult<AddressResponse>>> GetAddressesByCustomerAsync(int customerId, PaginationRequest paginationRequest);
     }
 }

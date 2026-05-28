@@ -4,9 +4,6 @@ namespace ECommerceApp.DTOs.AddressDTOs
 {
     public class AddressCreateRequest
     {
-        [Required(ErrorMessage = "CustomerId is required.")]
-        public int CustomerId { get; set; }
-
         [Required(ErrorMessage = "Address Line 1 is required.")]
         [StringLength(100, ErrorMessage = "Address Line 1 cannot exceed 100 characters.")]
         public string AddressLine1 { get; set; }

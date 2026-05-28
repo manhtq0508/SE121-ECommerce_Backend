@@ -13,17 +13,16 @@ namespace ECommerceApp.Controllers
     {
         // Submits feedback for a product.
         [Authorize]
-        [HttpPost("SubmitFeedback")]
-        public async Task<ActionResult<ApiResponse<FeedbackResponse>>> SubmitFeedback([FromBody] FeedbackCreateRequest feedbackCreateDto)
+        [HttpPost("SubmitFeedback/products/{productId:int}")]
+        public async Task<ActionResult<ApiResponse<FeedbackResponse>>> SubmitFeedback(int productId, [FromBody] FeedbackCreateRequest feedbackCreateDto)
         {
             var currentCustomerId = User.GetCustomerId();
-
-            if (!User.IsAdmin() && currentCustomerId != feedbackCreateDto.CustomerId)
+            if (currentCustomerId == null)
             {
                 return Forbid();
             }
 
-            var response = await feedbackService.SubmitFeedbackAsync(feedbackCreateDto);
+            var response = await feedbackService.SubmitFeedbackAsync(currentCustomerId.Value, productId, feedbackCreateDto);
 
             if (response.StatusCode != 200)
             {
@@ -59,17 +58,16 @@ namespace ECommerceApp.Controllers
 
         // Updates a specific feedback entry.
         [Authorize]
-        [HttpPut("UpdateFeedback")]
-        public async Task<ActionResult<ApiResponse<FeedbackResponse>>> UpdateFeedback([FromBody] FeedbackUpdateRequest feedbackUpdateDto)
+        [HttpPut("UpdateFeedback/{id:int}")]
+        public async Task<ActionResult<ApiResponse<FeedbackResponse>>> UpdateFeedback(int id, [FromBody] FeedbackUpdateRequest feedbackUpdateDto)
         {
             var currentCustomerId = User.GetCustomerId();
-
-            if (!User.IsAdmin() && currentCustomerId != feedbackUpdateDto.CustomerId)
+            if (currentCustomerId == null)
             {
                 return Forbid();
             }
 
-            var response = await feedbackService.UpdateFeedbackAsync(feedbackUpdateDto);
+            var response = await feedbackService.UpdateFeedbackAsync(id, currentCustomerId.Value, User.IsAdmin(), feedbackUpdateDto);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -79,18 +77,18 @@ namespace ECommerceApp.Controllers
 
         // Deletes a specific feedback entry.
         [Authorize]
-        [HttpDelete("DeleteFeedback")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> DeleteFeedback([FromBody] FeedbackDeleteRequest feedbackDeleteDto)
+        [HttpDelete("DeleteFeedback/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> DeleteFeedback(int id)
         {
             var currentCustomerId = User.GetCustomerId();
             var isAdmin = User.IsAdmin();
 
-            if (!isAdmin && currentCustomerId != feedbackDeleteDto.CustomerId)
+            if (currentCustomerId == null)
             {
                 return Forbid();
             }
 
-            var response = await feedbackService.DeleteFeedbackAsync(feedbackDeleteDto, isAdmin);
+            var response = await feedbackService.DeleteFeedbackAsync(id, currentCustomerId.Value, isAdmin);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);

@@ -19,20 +19,20 @@ namespace ECommerceApp.Services.Implements
             { OrderStatus.Canceled, [] }
         };
 
-        public async Task<ApiResponse<OrderResponse>> CreateOrderAsync(OrderCreateRequest orderDto)
+        public async Task<ApiResponse<OrderResponse>> CreateOrderAsync(int customerId, OrderCreateRequest orderDto)
         {
             await using var transaction = await unitOfWork.BeginTransactionAsync();
             try
             {
-                var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(orderDto.CustomerId);
+                var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(customerId);
                 if (customer == null)
                     return new ApiResponse<OrderResponse>(404, "Customer does not exist.");
 
                 var billingAddress = await unitOfWork.AddressRepository.GetByIdAsync(orderDto.BillingAddressId);
-                if (billingAddress == null || billingAddress.CustomerId != orderDto.CustomerId)
+                if (billingAddress == null || billingAddress.CustomerId != customerId)
                     return new ApiResponse<OrderResponse>(400, "Billing Address is invalid or does not belong to the customer.");
 
-                var shippingAddress = await unitOfWork.AddressRepository.GetByIdAndCustomerIdAsync(orderDto.ShippingAddressId, orderDto.CustomerId);
+                var shippingAddress = await unitOfWork.AddressRepository.GetByIdAndCustomerIdAsync(orderDto.ShippingAddressId, customerId);
                 if (shippingAddress == null)
                     return new ApiResponse<OrderResponse>(400, "Shipping Address is invalid or does not belong to the customer.");
 
@@ -84,7 +84,7 @@ namespace ECommerceApp.Services.Implements
                 var order = new Order
                 {
                     OrderNumber = GenerateOrderNumber(),
-                    CustomerId = orderDto.CustomerId,
+                    CustomerId = customerId,
                     OrderDate = DateTime.UtcNow,
                     BillingAddressId = orderDto.BillingAddressId,
                     ShippingAddressId = orderDto.ShippingAddressId,
@@ -98,7 +98,7 @@ namespace ECommerceApp.Services.Implements
                 
                 unitOfWork.OrderRepository.Add(order);
 
-                var cart = await unitOfWork.CartRepository.GetActiveCartByCustomerIdAsync(orderDto.CustomerId, trackChanges: true);
+                var cart = await unitOfWork.CartRepository.GetActiveCartByCustomerIdAsync(customerId, trackChanges: true);
                 if (cart != null)
                 {
                     cart.IsCheckedOut = true;
@@ -142,11 +142,11 @@ namespace ECommerceApp.Services.Implements
             }
         }
         
-        public async Task<ApiResponse<ConfirmationResponse>> UpdateOrderStatusAsync(OrderStatusUpdateRequest statusDto)
+        public async Task<ApiResponse<ConfirmationResponse>> UpdateOrderStatusAsync(int orderId, OrderStatusUpdateRequest statusDto)
         {
             try
             {
-                var order = await unitOfWork.OrderRepository.GetByIdAsync(statusDto.OrderId, trackChanges: true);
+                var order = await unitOfWork.OrderRepository.GetByIdAsync(orderId, trackChanges: true);
                 
                 if (order == null)
                 {
@@ -180,7 +180,7 @@ namespace ECommerceApp.Services.Implements
 
                 var confirmation = new ConfirmationResponse
                 {
-                    Message = $"Order status for ID {statusDto.OrderId} was updated successfully to {newStatus}."
+                    Message = $"Order status for ID {orderId} was updated successfully to {newStatus}."
                 };
 
                 return new ApiResponse<ConfirmationResponse>(200, confirmation);

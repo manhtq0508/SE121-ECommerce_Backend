@@ -31,7 +31,7 @@ public class ShoppingCartService(
         }
     }
 
-    public async Task<ApiResponse<CartResponse>> AddToCartAsync(AddToCartRequest addToCartDto)
+    public async Task<ApiResponse<CartResponse>> AddToCartAsync(int customerId, AddToCartRequest addToCartDto)
     {
         try
         {
@@ -42,12 +42,12 @@ public class ShoppingCartService(
                 return new ApiResponse<CartResponse>(400, $"Only {product.StockQuantity} units available.");
 
             // Bật Tracking để EF Core giám sát sự thay đổi
-            var cart = await unitOfWork.CartRepository.GetActiveCartByCustomerIdAsync(addToCartDto.CustomerId, trackChanges: true);
+            var cart = await unitOfWork.CartRepository.GetActiveCartByCustomerIdAsync(customerId, trackChanges: true);
 
             if (cart == null)
             {
                 cart = new Cart {
-                    CustomerId = addToCartDto.CustomerId,
+                    CustomerId = customerId,
                     IsCheckedOut = false,
                     CartItems = new List<CartItem>()
                 };
@@ -92,14 +92,14 @@ public class ShoppingCartService(
         }
     }
 
-    public async Task<ApiResponse<CartResponse>> UpdateCartItemAsync(UpdateCartItemRequest updateDto)
+    public async Task<ApiResponse<CartResponse>> UpdateCartItemAsync(int customerId, int cartItemId, UpdateCartItemRequest updateDto)
     {
         try
         {
-            var cart = await unitOfWork.CartRepository.GetActiveCartByCustomerIdAsync(updateDto.CustomerId, trackChanges: true);
+            var cart = await unitOfWork.CartRepository.GetActiveCartByCustomerIdAsync(customerId, trackChanges: true);
             if (cart == null) return new ApiResponse<CartResponse>(404, "Cart not found.");
 
-            var item = cart.CartItems.FirstOrDefault(ci => ci.Id == updateDto.CartItemId);
+            var item = cart.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
             if (item == null) return new ApiResponse<CartResponse>(404, "Item not found.");
 
             if (updateDto.Quantity > item.Product.StockQuantity)
@@ -121,14 +121,14 @@ public class ShoppingCartService(
         }
     }
 
-    public async Task<ApiResponse<CartResponse>> RemoveCartItemAsync(RemoveCartItemDTO removeCartItemDto)
+    public async Task<ApiResponse<CartResponse>> RemoveCartItemAsync(int customerId, int cartItemId)
     {
         try
         {
-            var cart = await unitOfWork.CartRepository.GetActiveCartByCustomerIdAsync(removeCartItemDto.CustomerId, trackChanges: true);
+            var cart = await unitOfWork.CartRepository.GetActiveCartByCustomerIdAsync(customerId, trackChanges: true);
             if (cart == null) return new ApiResponse<CartResponse>(404, "Cart not found.");
 
-            var item = cart.CartItems.FirstOrDefault(ci => ci.Id == removeCartItemDto.CartItemId);
+            var item = cart.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
             if (item == null) return new ApiResponse<CartResponse>(404, "Item not found.");
 
             unitOfWork.CartItemRepository.Remove(item);

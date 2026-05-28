@@ -16,17 +16,17 @@ namespace ECommerceApp.Controllers
         // Creates a new order.
         // POST: api/Orders/CreateOrder
         [Authorize]
-        [HttpPost("CreateOrder")]
-        public async Task<ActionResult<ApiResponse<OrderResponse>>> CreateOrder([FromBody] OrderCreateRequest orderDto)
+        [HttpPost("CreateOrder/{customerId:int}")]
+        public async Task<ActionResult<ApiResponse<OrderResponse>>> CreateOrder(int customerId, [FromBody] OrderCreateRequest orderDto)
         {
             var currentCustomerId = User.GetCustomerId();
 
-            if (!User.IsAdmin() && currentCustomerId != orderDto.CustomerId)
+            if (!User.IsAdmin() && currentCustomerId != customerId)
             {
                 return Forbid();
             }
 
-            var response = await orderService.CreateOrderAsync(orderDto);
+            var response = await orderService.CreateOrderAsync(customerId, orderDto);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);
@@ -57,10 +57,10 @@ namespace ECommerceApp.Controllers
         // Updates the status of an existing order.
         // PUT: api/Orders/UpdateOrderStatus
         [Authorize(Roles = "Admin")]
-        [HttpPut("UpdateOrderStatus")]
-        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateOrderStatus([FromBody] OrderStatusUpdateRequest statusDto)
+        [HttpPut("UpdateOrderStatus/{id:int}")]
+        public async Task<ActionResult<ApiResponse<ConfirmationResponse>>> UpdateOrderStatus(int id, [FromBody] OrderStatusUpdateRequest statusDto)
         {
-            var response = await orderService.UpdateOrderStatusAsync(statusDto);
+            var response = await orderService.UpdateOrderStatusAsync(id, statusDto);
             if (response.StatusCode != 200)
             {
                 return StatusCode(response.StatusCode, response);

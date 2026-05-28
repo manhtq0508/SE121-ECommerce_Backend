@@ -84,17 +84,17 @@ namespace ECommerceApp.Services.Implements
             }
         }
 
-        public async Task<ApiResponse<ConfirmationResponse>> UpdateCategoryAsync(CategoryUpdateRequest categoryDto)
+        public async Task<ApiResponse<ConfirmationResponse>> UpdateCategoryAsync(int categoryId, CategoryUpdateRequest categoryDto)
         {
             try
             {
-                var category = await unitOfWork.CategoryRepository.GetByIdAsync(categoryDto.Id, true);
+                var category = await unitOfWork.CategoryRepository.GetByIdAsync(categoryId, true);
                 if (category == null)
                 {
                     return new ApiResponse<ConfirmationResponse>(404, "Category not found.");
                 }
 
-                if (await unitOfWork.CategoryRepository.ExistsByNameAsync(categoryDto.Name, categoryDto.Id))
+                if (await unitOfWork.CategoryRepository.ExistsByNameAsync(categoryDto.Name, categoryId))
                 {
                     return new ApiResponse<ConfirmationResponse>(400, "Another category with the same name already exists.");
                 }
@@ -107,7 +107,7 @@ namespace ECommerceApp.Services.Implements
 
                 return new ApiResponse<ConfirmationResponse>(200, new ConfirmationResponse
                 {
-                    Message = $"Category with Id {categoryDto.Id} updated successfully."
+                    Message = $"Category with Id {categoryId} updated successfully."
                 });
             }
             catch (Exception ex)

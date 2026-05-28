@@ -5,9 +5,6 @@ namespace ECommerceApp.DTOs.PaymentDTOs
 {
     public class PaymentStatusUpdateRequest
     {
-        [Required(ErrorMessage = "Payment ID is required.")]
-        public int PaymentId { get; set; }
-
         public string? TransactionId { get; set; }
 
         [Required(ErrorMessage = "Status is required.")]

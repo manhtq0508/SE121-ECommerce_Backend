@@ -4,13 +4,8 @@ namespace ECommerceApp.DTOs.CancellationDTOs
 {
     public class CancellationStatusUpdateRequest
     {
-        [Required(ErrorMessage = "Cancellation ID is required.")]
-        public int CancellationId { get; set; }
-
         [Required]
         public CancellationStatus Status { get; set; }
-
-        public int? ProcessedBy { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Cancellation charges must be non-negative.")]
         public decimal? CancellationCharges { get; set; }

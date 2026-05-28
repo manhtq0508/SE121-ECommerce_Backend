@@ -14,17 +14,18 @@ public class AddressService(
     IAddressMapper mapper,
     ILogger<AddressService> logger) : IAddressService
 {
-    public async Task<ApiResponse<AddressResponse>> CreateAddressAsync(AddressCreateRequest addressDto)
+    public async Task<ApiResponse<AddressResponse>> CreateAddressAsync(int customerId, AddressCreateRequest addressDto)
     {
         try
         {
-            var customer = await unitOfWork.CustomerRepository.GetByIdAsync(addressDto.CustomerId);
+            var customer = await unitOfWork.CustomerRepository.GetActiveByIdAsync(customerId);
             if (customer == null)
             {
                 return new ApiResponse<AddressResponse>(404, "Customer not found.");
             }
 
             var address = mapper.Map(addressDto);
+            address.CustomerId = customerId;
 
             unitOfWork.AddressRepository.Add(address);
             await unitOfWork.SaveChangesAsync();
@@ -66,18 +67,20 @@ public class AddressService(
         }
     }
 
-    public async Task<ApiResponse<ConfirmationResponse>> UpdateAddressAsync(AddressUpdateRequest addressDto)
+    public async Task<ApiResponse<ConfirmationResponse>> UpdateAddressAsync(int addressId, int currentCustomerId, bool isAdmin, AddressUpdateRequest addressDto)
     {
         try
         {
-            var address = await unitOfWork.AddressRepository.GetByIdAndCustomerIdAsync(
-                addressDto.AddressId, 
-                addressDto.CustomerId, 
-                trackChanges: true);
+            var address = await unitOfWork.AddressRepository.GetByIdAsync(addressId, trackChanges: true);
 
             if (address == null)
             {
                 return new ApiResponse<ConfirmationResponse>(404, "Address not found.");
+            }
+
+            if (!isAdmin && address.CustomerId != currentCustomerId)
+            {
+                return new ApiResponse<ConfirmationResponse>(403, "You do not have permission to update this address.");
             }
 
             address.AddressLine1 = addressDto.AddressLine1;
@@ -91,7 +94,7 @@ public class AddressService(
 
             var confirmationMessage = new ConfirmationResponse
             {
-                Message = $"Address with Id {addressDto.AddressId} updated successfully."
+                Message = $"Address with Id {addressId} updated successfully."
             };
 
             return new ApiResponse<ConfirmationResponse>(200, confirmationMessage);
@@ -103,18 +106,20 @@ public class AddressService(
         }
     }
 
-    public async Task<ApiResponse<ConfirmationResponse>> DeleteAddressAsync(AddressDeleteRequest addressDeleteDto)
+    public async Task<ApiResponse<ConfirmationResponse>> DeleteAddressAsync(int addressId, int currentCustomerId, bool isAdmin)
     {
         try
         {
-            var address = await unitOfWork.AddressRepository.GetByIdAndCustomerIdAsync(
-                addressDeleteDto.AddressId, 
-                addressDeleteDto.CustomerId, 
-                trackChanges: true);
+            var address = await unitOfWork.AddressRepository.GetByIdAsync(addressId, trackChanges: true);
 
             if (address == null)
             {
                 return new ApiResponse<ConfirmationResponse>(404, "Address not found.");
+            }
+
+            if (!isAdmin && address.CustomerId != currentCustomerId)
+            {
+                return new ApiResponse<ConfirmationResponse>(403, "You do not have permission to delete this address.");
             }
 
             unitOfWork.AddressRepository.Remove(address);
@@ -122,7 +127,7 @@ public class AddressService(
             
             var confirmationMessage = new ConfirmationResponse
             {
-                Message = $"Address with Id {addressDeleteDto.AddressId} deleted successfully."
+                Message = $"Address with Id {addressId} deleted successfully."
             };
 
             return new ApiResponse<ConfirmationResponse>(200, confirmationMessage);

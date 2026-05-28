@@ -41,6 +41,21 @@ public class FeedbackRepository(ApplicationDbContext context) : IFeedbackReposit
             .Include(f => f.Product)
             .ToListAsync();
     }
+
+    public async Task<Feedback?> GetByIdWithDetailsAsync(int id, bool trackChanges = false)
+    {
+        var query = context.Feedbacks.AsQueryable();
+    
+        if (!trackChanges)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query
+            .Include(f => f.Customer)
+            .Include(f => f.Product)
+            .FirstOrDefaultAsync(f => f.Id == id);
+    }
     
     public async Task<Feedback?> GetByIdAndCustomerIdWithDetailsAsync(int id, int customerId, bool trackChanges = false)
     {

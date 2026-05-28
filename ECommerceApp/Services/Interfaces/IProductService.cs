@@ -8,10 +8,10 @@ namespace ECommerceApp.Services.Interfaces
     {
         Task<ApiResponse<ProductResponse>> CreateProductAsync(ProductCreateRequest productDto);
         Task<ApiResponse<ProductResponse>> GetProductByIdAsync(int id);
-        Task<ApiResponse<ConfirmationResponse>> UpdateProductAsync(ProductUpdateRequest productDto);
+        Task<ApiResponse<ConfirmationResponse>> UpdateProductAsync(int productId, ProductUpdateRequest productDto);
         Task<ApiResponse<ConfirmationResponse>> DeleteProductAsync(int id);
         Task<ApiResponse<PagedResult<ProductResponse>>> GetAllProductsAsync(PaginationRequest paginationRequest);
         Task<ApiResponse<PagedResult<ProductResponse>>> GetAllProductsByCategoryAsync(int categoryId, PaginationRequest paginationRequest);
-        Task<ApiResponse<ConfirmationResponse>> UpdateProductStatusAsync(ProductStatusUpdateRequest productStatusUpdateDTO);
+        Task<ApiResponse<ConfirmationResponse>> UpdateProductStatusAsync(int productId, ProductStatusUpdateRequest productStatusUpdateDTO);
     }
 }

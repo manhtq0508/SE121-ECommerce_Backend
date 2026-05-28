@@ -12,15 +12,17 @@ namespace ECommerceApp.Services.Implements
         IEmailService emailService,
         ILogger<PaymentService> logger) : IPaymentService
     {
-        public async Task<ApiResponse<PaymentResponse>> ProcessPaymentAsync(PaymentRequest paymentRequest)
+        public async Task<ApiResponse<PaymentResponse>> ProcessPaymentAsync(int orderId, int currentCustomerId, bool isAdmin, PaymentRequest paymentRequest)
         {
             await using var transaction = await unitOfWork.BeginTransactionAsync();
             try
             {
-                var order = await unitOfWork.OrderRepository.GetByIdAndCustomerIdWithPaymentAsync(
-                    paymentRequest.OrderId, 
-                    paymentRequest.CustomerId, 
-                    trackChanges: true);
+                var order = isAdmin
+                    ? await unitOfWork.OrderRepository.GetOrderWithFullDetailsAsync(orderId, trackChanges: true)
+                    : await unitOfWork.OrderRepository.GetByIdAndCustomerIdWithPaymentAsync(
+                        orderId, 
+                        currentCustomerId, 
+                        trackChanges: true);
 
                 if (order == null)
                 {
@@ -55,7 +57,7 @@ namespace ECommerceApp.Services.Implements
                 {
                     payment = new Payment
                     {
-                        OrderId = paymentRequest.OrderId,
+                        OrderId = orderId,
                         PaymentMethod = paymentRequest.PaymentMethod,
                         Amount = paymentRequest.Amount,
                         PaymentDate = DateTime.UtcNow,
@@ -90,7 +92,7 @@ namespace ECommerceApp.Services.Implements
 
                 if (order.OrderStatus == OrderStatus.Processing)
                 {
-                    await SendOrderConfirmationEmailAsync(paymentRequest.OrderId);
+                    await SendOrderConfirmationEmailAsync(orderId);
                 }
 
                 var paymentResponse = new PaymentResponse
@@ -179,11 +181,11 @@ namespace ECommerceApp.Services.Implements
             }
         }
 
-        public async Task<ApiResponse<ConfirmationResponse>> UpdatePaymentStatusAsync(PaymentStatusUpdateRequest statusUpdate)
+        public async Task<ApiResponse<ConfirmationResponse>> UpdatePaymentStatusAsync(int paymentId, PaymentStatusUpdateRequest statusUpdate)
         {
             try
             {
-                var payment = await unitOfWork.PaymentRepository.GetByIdWithOrderAsync(statusUpdate.PaymentId, trackChanges: true);
+                var payment = await unitOfWork.PaymentRepository.GetByIdWithOrderAsync(paymentId, trackChanges: true);
 
                 if (payment == null)
                 {
@@ -219,19 +221,16 @@ namespace ECommerceApp.Services.Implements
             }
         }
 
-        public async Task<ApiResponse<ConfirmationResponse>> CompleteCodPaymentAsync(CODPaymentUpdateRequest codPaymentUpdateDto)
+        public async Task<ApiResponse<ConfirmationResponse>> CompleteCodPaymentAsync(int paymentId)
         {
             await using var transaction = await unitOfWork.BeginTransactionAsync();
             try
             {
-                var payment = await unitOfWork.PaymentRepository.GetByIdAndOrderIdWithOrderAsync(
-                    codPaymentUpdateDto.PaymentId, 
-                    codPaymentUpdateDto.OrderId, 
-                    trackChanges: true);
+                var payment = await unitOfWork.PaymentRepository.GetByIdWithOrderAsync(paymentId, trackChanges: true);
 
                 if (payment == null)
                 {
-                    return new ApiResponse<ConfirmationResponse>(404, "Payment not found or does not match the specified order.");
+                    return new ApiResponse<ConfirmationResponse>(404, "Payment not found.");
                 }
 
                 if (payment.Order == null)
